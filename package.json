@@ -6,13 +6,16 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "babel src/slix.js > slix.js && uglifyjs slix.js -o slix.min.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "npm build",
+    "test": "mocha --recursive"
   },
   "author": "Avichay Eyal",
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.3.3",
+    "expect.js": "^0.3.1",
+    "mocha": "^3.4.1",
     "uglify-js-harmony": "^2.6.2"
   }
 }
