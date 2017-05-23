@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slix example 1</title>
+    <script src="../src/slix.js"></script>
+</head>
+<body>
+    <input id="text1" type="text" value="hello"/><button id="b1">Submit text 1</button>
+    <hr/>
+    <input id="text2" type="text" value="world"/><button id="b2">Submit text 2</button>
+    <hr/>
+    <button onclick="submit()">Submit</button>
+    <hr/>
+    <button onclick="sub()">Subscribe</button><button onclick="unsub()">Unsubscribe</button>
+
+    <script>
+
+        Slix.model('myModel', {
+            text1: 'hello',
+            text2: 'world'
+        });
+
+        const model = Slix.model('myModel');
+
+        let unsubscriber;
+
+        function subscriber(changes, data) {
+            console.log('changes', changes);
+            console.log('data', data);
+            if (changes.text1) {
+                alert('text1 was changed to ' + data.text1);
+            }
+            if (changes.text2) {
+                alert('text2 was changed to ' + data.text2);
+            }
+        }
+
+        function sub() {
+            unsubscriber = model.subscribe(subscriber);
+        }
+
+        function unsub() {
+            unsubscriber();
+        }
+
+        function submit() {
+            model.text1 = document.querySelector('#text1').value;
+            model.text2 = document.querySelector('#text2').value;
+        }
+
+        document.querySelector('#b1').onclick = () => {
+            model.text1 = document.querySelector('#text1').value;
+        };
+
+        document.querySelector('#b2').onclick = () => {
+            model.text2 = document.querySelector('#text2').value;
+        };
+
+    </script>
+</body>
+</html>
