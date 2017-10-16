@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 // constructor
 function Slix(initialState) {
     var _this = this;
@@ -29,7 +31,19 @@ function Slix(initialState) {
     });
 
     Object.keys(initialState).forEach(function (key) {
-        _this.__storage[key] = initialState[key];
+        if (_typeof(initialState[key]) === 'object') {
+            var self = _this;
+            _this.__storage[key] = new Slix(initialState[key]);
+            _this.__storage[key].subscribe(function (changes, storage) {
+                for (var _key in changes) {
+                    if (changes[_key]) {
+                        self.__collect(key + '.' + _key);
+                    }
+                }
+            });
+        } else {
+            _this.__storage[key] = initialState[key];
+        }
         _this.__defineSetter__(key, function (x) {
             this.__storage[key] = x;
             this.__collect(key);

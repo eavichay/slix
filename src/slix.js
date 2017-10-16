@@ -27,7 +27,19 @@ function Slix(initialState) {
     });
 
     Object.keys(initialState).forEach( key => {
-        this.__storage[key] = initialState[key];
+        if (typeof initialState[key] === 'object') {
+            let self = this;
+            this.__storage[key] = new Slix(initialState[key])
+            this.__storage[key].subscribe( function (changes, storage) {
+                for (let _key in changes) {
+                    if (changes[_key]) {
+                        self.__collect(key + '.' + _key)
+                    }
+                }
+            })
+        } else {
+            this.__storage[key] = initialState[key];
+        }
         this.__defineSetter__(key, function(x) {
             this.__storage[key] = x;
             this.__collect(key);

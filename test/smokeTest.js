@@ -1,6 +1,6 @@
 describe('Smoke Tests', function() {
     const expect = require('expect.js');
-    const Slix = require('../slix');
+    const Slix = require('../src/slix');
 
     it('Should be defined', function() {
         expect(Slix).to.be.ok();
@@ -9,6 +9,21 @@ describe('Smoke Tests', function() {
     it('Should return undefined for non-existing namespace', function() {
         expect(Slix.model('nonexistent')).to.be(undefined);
     });
+
+    it('Should track nested changes', function(done) {
+        const model = Slix.model('nested', {
+            parent: {
+                child: 123
+            }
+        });
+        const unsub = model.subscribe( (changes, state) => {
+            expect(changes['parent.child']).to.be(true);
+            expect(state.parent.child).to.be(456);
+            unsub();
+            done();
+        })
+        model.parent.child = 456;
+    })
 
     it('Should return an empty model', function() {
         expect(Object.keys(Slix.model('emptyModel', {})).length).to.be(0);
