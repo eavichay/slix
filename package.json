@@ -1,6 +1,6 @@
 {
   "name": "slix",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "State management for web applications",
   "main": "slix.js",
   "scripts": {
