@@ -69,24 +69,40 @@ Slix.model = function (namespace, initialState) {
 };
 
 Slix.bind = function (slixModel, watchExpr) {
+    var $ = Symbol.for(Slix);
     return function (target, key, descriptor) {
+        descriptor.watchExpr = watchExpr;
+        descriptor.key = key;
+        target[$] = target[$] ? target[$].concat(descriptor) : [descriptor];
         var cFn = target.onBeforeCreated || target.connectedCallback;
         var dFn = target.onRemoved || target.disconnectedCallback;
-        var unsubscriber = void 0;
-        target[cFn.name] = function () {
-            var _this2 = this;
+        Object.defineProperty(target, cFn.name, {
+            writable: true,
+            value: function value() {
+                var _this2 = this;
 
-            unsubscriber = slixModel.subscribe(function (chg) {
-                if (chg[watchExpr]) {
-                    _this2[key]();
-                }
-            });
-            cFn.apply(this);
-        };
-        target[dFn.name] = function () {
-            unsubscriber();
-            dFn.apply(this);
-        };
+                this[$].forEach(function (d) {
+                    d.unsubscriber = slixModel.subscribe(function (chg) {
+                        if (chg[d.watchExpr]) {
+                            console.log(d.watchExpr);
+                            _this2[d.key]();
+                        }
+                    });
+                    cFn.apply(_this2);
+                });
+            }
+        });
+
+        Object.defineProperty(target, dFn.name, {
+            writable: true,
+            value: function value() {
+                this[$].forEach(function (d) {
+                    d.unsubscriber();
+                });
+                dFn.apply(this);
+            }
+        });
+
         return descriptor;
     };
 };
