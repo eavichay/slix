@@ -78,7 +78,6 @@ Slix.bind = (slixModel, watchExpr) => {
                 this[$].forEach(d => {
                     d.unsubscriber = slixModel.subscribe( chg => {
                         if (chg[d.watchExpr]) {
-                            console.log(d.watchExpr);
                             this[d.key]();
                         }
                     })
