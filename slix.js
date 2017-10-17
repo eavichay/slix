@@ -68,22 +68,45 @@ Slix.model = function (namespace, initialState) {
     return Slix.__repository[namespace];
 };
 
+Slix.bind = function (slixModel, watchExpr) {
+    return function (target, key, descriptor) {
+        var cFn = target.onBeforeCreated || target.connectedCallback;
+        var dFn = target.onRemoved || target.disconnectedCallback;
+        var unsubscriber = void 0;
+        target[cFn.name] = function () {
+            var _this2 = this;
+
+            unsubscriber = slixModel.subscribe(function (chg) {
+                if (chg[watchExpr]) {
+                    _this2[key]();
+                }
+            });
+            cFn.apply(this);
+        };
+        target[dFn.name] = function () {
+            unsubscriber();
+            dFn.apply(this);
+        };
+        return descriptor;
+    };
+};
+
 // public methods
 Slix.prototype.__collect = function (key) {
-    var _this2 = this;
+    var _this3 = this;
 
     this.__changes[key] = true;
     !this.__pending && setTimeout(function () {
-        _this2.__dispatch();
+        _this3.__dispatch();
     }, 0);
     this.__pending = true;
 };
 
 Slix.prototype.__dispatch = function () {
-    var _this3 = this;
+    var _this4 = this;
 
     this.__subscribers.forEach(function (subscriber) {
-        subscriber(_this3.__changes, _this3.__storage);
+        subscriber(_this4.__changes, _this4.__storage);
     });
     this.__changes = {};
     this.__pending = false;
@@ -94,10 +117,10 @@ Slix.prototype.destroy = function () {
 };
 
 Slix.prototype.subscribe = function (subscriber) {
-    var _this4 = this;
+    var _this5 = this;
 
     var unSubscribe = function unSubscribe() {
-        _this4.__subscribers = _this4.__subscribers.filter(function (existing) {
+        _this5.__subscribers = _this5.__subscribers.filter(function (existing) {
             return existing !== subscriber;
         });
     };

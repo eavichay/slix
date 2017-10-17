@@ -64,6 +64,27 @@ Slix.model = function(namespace, initialState) {
     return Slix.__repository[namespace];
 };
 
+Slix.bind = (slixModel, watchExpr) => {
+    return (target, key, descriptor) => {
+        const cFn = target.onBeforeCreated || target.connectedCallback;
+        const dFn = target.onRemoved || target.disconnectedCallback;
+        let unsubscriber;
+        target[cFn.name] = function () {
+            unsubscriber = slixModel.subscribe( chg => {
+                if (chg[watchExpr]) {
+                    this[key]();
+                }
+            })
+            cFn.apply(this);
+        }
+        target[dFn.name] = function() {
+            unsubscriber();
+            dFn.apply(this);
+        }
+        return descriptor;
+    }
+}
+
 
 // public methods
 Slix.prototype.__collect = function(key) {
